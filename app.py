@@ -24,22 +24,20 @@ def create_link():
 def share(token):
     return render_template('share_consent.html')
 
-@app.route('/upload_photo', methods=['POST'])
-def upload_photo():
-    if 'photo' not in request.files:
-        return 'No file', 400
-    f = request.files['photo']
-    timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
-    filename = f'{timestamp}_{f.filename}'
-    path = os.path.join(UPLOAD_FOLDER, filename)
-    f.save(path)
-    return 'OK', 200
+from flask import send_from_directory
 
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 @app.route('/logs')
 def logs():
     files = os.listdir(UPLOAD_FOLDER)
     files.sort(reverse=True)
     return render_template('logs.html', files=files)
+
+from flask import send_from_directory
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
