@@ -1,8 +1,9 @@
-from flask import Flask, request, render_template, redirect, url_for
-import os
-from datetime import datetime
+from flask import send_from_directory
 
-app = Flask(__name__)
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+import os
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
