@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"/><title>Logs</title></head>
+<body>
+  <h2>Consents</h2>
+  <ul>
+    {% for c in consents %}
+      <li>{{ c['consented_at'] }} — IP: {{ c['ip'] }} — UA: {{ c['user_agent'] }}</li>
+    {% endfor %}
+  </ul>
+  <h2>Photos</h2>
+  {% for p in photos %}
+    <div>
+      <a href="/uploads/{{ p['filename'] }}" target="_blank"><img src="/uploads/{{ p['filename'] }}" width="200"></a>
+      <div>{{ p['uploaded_at'] }}</div>
+    </div>
+  {% endfor %}
+</body>
+</html>
