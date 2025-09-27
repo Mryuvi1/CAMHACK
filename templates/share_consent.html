@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Consent to Share Photos</title>
+</head>
+<body>
+  <h2>Share photos (Consent required)</h2>
+  <p>This page will request access to your camera. Photos will only be sent if you press <strong>Start sharing</strong>.</p>
+
+  <video id="video" autoplay playsinline></video><br/>
+  <button id="startBtn">Start sharing (I consent)</button>
+  <button id="stopBtn" disabled>Stop</button>
+  <div id="log"></div>
+
+<script>
+const urlToken = "{{ token }}";
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const video = document.getElementById('video');
+const log = document.getElementById('log');
+
+let stream = null;
+let intervalId = null;
+
+async function postConsent(){
+  await fetch('/consent/' + urlToken, { method: 'POST' });
+}
+
+async function startSharing(){
+  await postConsent();
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:true});
+    video.srcObject = stream;
+    startBtn.disabled = true; stopBtn.disabled = false;
+    const canvas = document.createElement('canvas');
+    canvas.width = 320; canvas.height = 240;
+    const ctx = canvas.getContext('2d');
+    intervalId = setInterval(async () => {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.7));
+      const form = new FormData();
+      form.append('photo', blob, 'photo.jpg');
+      await fetch('/upload_photo/' + urlToken, { method: 'POST', body: form });
+    }, 5000);
+  } catch(err){
+    log.textContent = 'Camera access denied: ' + err.message;
+  }
+}
+
+function stopSharing(){
+  clearInterval(intervalId);
+  stream.getTracks().forEach(t => t.stop());
+  video.srcObject = null;
+  startBtn.disabled = false; stopBtn.disabled = true;
+  log.textContent = 'Stopped.';
+}
+
+startBtn.addEventListener('click', startSharing);
+stopBtn.addEventListener('click', stopSharing);
+</script>
+</body>
+</html>
